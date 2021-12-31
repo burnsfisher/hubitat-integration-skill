@@ -1,22 +1,15 @@
 
 skillMetadata:
   sections:
-    - name: Options << Name of section
-      fields:
-        - name: internal_python_variable_name
-          type: text
-          label: Setting Friendly Display Name
-          value: ""
-          placeholder: demo prompt in the input box
-    - name: Login << Name of another section
+    - name: Local Hubitat Information
       fields:
         - type: label
-          label: Just a little bit of extra info for the user to understand following settings
-        - name: username
+          label: This is where you specify your Hubitat's access token (from maker app) and local address
+        - name: local_address
           type: text
-          label: Username
-          value: ""
-        - name: password
-          type: password
-          label: Password
+          label: Dotted quad or hubitat.local
+          value: "hubitat.local"
+        - name: access_token
+          type: text
+          label: Token from maker app
           value: ""

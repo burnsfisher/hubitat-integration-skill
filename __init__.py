@@ -5,10 +5,13 @@ import json
 class HubitatIntegration(MycroftSkill):
     def __init__(self):
         MycroftSkill.__init__(self)
+
+    def initialize(self):
         self.devIdDict={}
-        self.access={'access_token':'66990086-b22b-4c83-9b88-579b434c97bb'}
+        self.accessToken = {'access_token':self.settings.get('access_token')}
+        self.address=self.settings.get('local_address')
         self.update_devices()
-    #@intent_file_handler('test.hubitat.intent')
+
     @intent_file_handler('turn.on.intent')
     def handle_on_intent(self, message):
         device = message.data.get('device')
@@ -41,12 +44,13 @@ class HubitatIntegration(MycroftSkill):
         return hubId
 
     def hub_switch_devices(self,devid,state):
-        url="http://10.0.1.121/apps/api/34/devices/"+devid+"/"+state
-        self.log.debug(url)
-        r=requests.get(url,params=self.access)
+        url="http://"+self.address+"/apps/api/34/devices/"+devid+"/"+state
+        self.log.debug("URL for switching device "+url)
+        r=requests.get(url,params=self.accessToken)
         
     def update_devices(self):
-        r=requests.get("http://10.0.1.121/apps/api/34/devices",params=self.access)
+        self.log.debug(self.accessToken)
+        r=requests.get("http://"+self.address+"/apps/api/34/devices",params=self.accessToken)
         myJson = json.loads(r.text)
         count=0
         for device in myJson:
