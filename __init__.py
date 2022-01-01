@@ -103,6 +103,7 @@ class HubitatIntegration(MycroftSkill):
                         thisLabel = b[:-1]
                     else:
                         thisLabel=b
+                    thisLabel = thisLabel.replace("the ","")
                     self.devCommandsDict[thisLabel]=[]
                 elif a=='commands':
                     self.log.debug("Commands for "+thisLabel+" is=>"+str(b))
