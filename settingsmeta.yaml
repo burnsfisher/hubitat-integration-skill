@@ -13,3 +13,7 @@ skillMetadata:
           type: text
           label: Token from maker app
           value: ""
+        - name: minimum_fuzzy_score
+          type: number
+          label: 0 to 100.  Smaller value makes device name less fussy
+          value: 50

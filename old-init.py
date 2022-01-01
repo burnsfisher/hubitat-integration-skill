@@ -1,5 +1,4 @@
 from mycroft import MycroftSkill, intent_file_handler
-from fuzzywuzzy import fuzz
 import requests
 import json
 
@@ -10,53 +9,33 @@ class HubitatIntegration(MycroftSkill):
     def initialize(self):
         #This dict will hold the device name and its hubitat id number
         self.devIdDict={}
-        self.nameDictPresent=False
-        #Get a few settings from the Mycroft web site (they are specific to the user site) and
-        #get the current values
-        self.settings_change_callback = self.on_settings_changed
-        self.on_settings_changed()
-        
-    def on_settings_changed(self):
+        #Get a few settings from the Mycroft web site (they are specific to the user site)
         self.accessToken = {'access_token':self.settings.get('access_token')}
         self.address=self.settings.get('local_address')
-        self.minFuzz=self.settings.get('minimum_fuzzy_score')
+        #And finally, get the devices that we will can use from Hubitat
+        self.update_devices()
 
     @intent_file_handler('turn.on.intent')
     def handle_on_intent(self, message):
-        # This is for utterances like "turn on the xxx"
-        try:
-            device = self.get_hub_device_name(message)
-        except:
-            return
+        # This is for stuff like "turn on the xxx"
+        device = self.get_hub_device_name(message)
         if self.is_command_available(command='on',device=device):
-            try:
-                self.hub_switch_devices(self.hub_get_device_id(device),"on")
-                self.speak_dialog('ok',data={'device': device})
-            except:
-                self.speak_dialog('url.error')
+            self.speak_dialog('on.off', data={'device': device})
+            self.hub_switch_devices(self.hub_get_device_id(device),"on")
     
     @intent_file_handler('turn.off.intent')
     def handle_off_intent(self, message):
-        # For utterances like "turn off the xxx"
-        try:
-            device = self.get_hub_device_name(message)
-        except:
-            return
+        device = self.get_hub_device_name(message)
         if self.is_command_available(command='off',device=device):
-            self.speak_dialog('ok', data={'device': device})
+            self.speak_dialog('on.off', data={'device': device})
             self.hub_switch_devices(self.hub_get_device_id(device),"off")
 
     @intent_file_handler('level.intent')
     def handle_level_intent(self,message):
-        # For utterances like "set the xxx to yyy%
-        try:
-            device = self.get_hub_device_name(message)
-        except:
-            return
+        device = self.get_hub_device_name(message)
         level = message.data.get('level')
         if self.is_command_available(command='setLevel',device=device):
             self.hub_switch_devices(self.hub_get_device_id(device),"setLevel",level)
-            self.speak_dialog('ok', data={'device': device})
 
     @intent_file_handler('rescan.intent')
     def handle_rescan_intent(self,message):
@@ -68,10 +47,10 @@ class HubitatIntegration(MycroftSkill):
         for realDev in self.devCommandsDict:
             if device.find(realDev) >= 0 and command in self.devCommandsDict[realDev]:
                 return True
-        self.speak_dialog('command.not.supported',data={'device':device,'command':command})
+        self.speak_dialog('not.supported',data={'device':device,'command':command})
         return False;
 
-    def get_hub_device_namexxx(self,message):
+    def get_hub_device_name(self,message):
         # The utterance may have something different than the real name like "the light" or "lights" rather
         # than the actual Hubitat name of light.  This finds the actual Hubitat name assuming the utterance
         # is a superset
@@ -85,34 +64,7 @@ class HubitatIntegration(MycroftSkill):
                 self.log.info("Changed "+utt_device+" to "+hubDev)
                 return hubDev
         self.log.info("No device found for "+utt_device)
-        self.speak_dialog('device.not.supported',data={'device':utt_device})
-        raise Exception("Unsupported Device")
-
-    def get_hub_device_name(self,message):
-        # The utterance may have something different than the real name like "the light" or "lights" rather
-        # than the actual Hubitat name of light.  This finds the actual Hubitat name assuming the utterance
-        # is a superset
-        if not self.nameDictPresent:
-            self.update_devices()
-        utt_device = message.data.get('device')
-        best_name = None
-        best_score=self.minFuzz
-        self.log.debug("minFuzz is "+str(self.minFuzz))
-        for hubDev in self.devIdDict:
-            score = fuzz.token_sort_ratio(
-                hubDev,
-                utt_device)
-            self.log.debug("Hubitate="+hubDev+", utterance="+utt_device+" score="+str(score))
-            if score > best_score:
-                best_score = score
-                best_name = hubDev
-        self.log.debug("Best score is "+str(best_score))
-        if best_score>self.minFuzz:
-            self.log.debug("Changed "+utt_device+" to "+best_name)
-            return best_name
-        self.log.info("No device found for "+utt_device)
-        self.speak_dialog('device.not.supported',data={'device':utt_device})
-        raise Exception("Unsupported Device")
+        return None
         
 
     def hub_get_device_id(self,device):
@@ -123,25 +75,20 @@ class HubitatIntegration(MycroftSkill):
         for hubDev in self.devIdDict:
             if device.find(hubDev) >= 0:
                 hubId=self.devIdDict[hubDev]
-                self.log.debug("Found device I said: "+hubDev+" ID="+hubId)
+                self.log.info("Found what I said: "+hubDev+" ID="+hubId)
                 return hubId
 
     def hub_switch_devices(self,devid,state,value=None):
         url="http://"+self.address+"/apps/api/34/devices/"+devid+"/"+state
         if(value != None):
             url = url+"/"+value
-        self.log.debug("URL for switching device "+url)
+        self.log.info("URL for switching device "+url)
         r=requests.get(url,params=self.accessToken)
         
     def update_devices(self):
         self.devCommandsDict = {}
         self.log.debug(self.accessToken)
-        try:
-            r=requests.get("http://"+self.address+"/apps/api/34/devices/all",params=self.accessToken)
-        except:
-            self.log.debug("Got an error from requests")
-            self.speak_dialog('url.error')
-
+        r=requests.get("http://"+self.address+"/apps/api/34/devices/all",params=self.accessToken)
         jsonLevel1 = json.loads(r.text)
         count=0
         for device in jsonLevel1:
@@ -152,7 +99,11 @@ class HubitatIntegration(MycroftSkill):
                 if a == 'id':
                     thisId=b
                 elif a=='label':
-                    thisLabel=b
+                    if b.endswith("s"):
+                        thisLabel = b[:-1]
+                    else:
+                        thisLabel=b
+                    thisLabel = thisLabel.replace("the ","")
                     self.devCommandsDict[thisLabel]=[]
                 elif a=='commands':
                     self.log.debug("Commands for "+thisLabel+" is=>"+str(b))
@@ -160,8 +111,9 @@ class HubitatIntegration(MycroftSkill):
                         self.devCommandsDict[thisLabel].append(c['command'])
             self.devIdDict[thisLabel]=thisId
             self.log.debug(self.devCommandsDict[thisLabel])
+            #if 'setLevel' in self.devCommandsDict[thisLabel]:
+            #    self.log.info("setLevel Exists in "+thisLabel)
             count=count+1
-            self.nameDictPresent=True
         return count
 
 
