@@ -30,7 +30,7 @@ class HubitatIntegration(MycroftSkill):
             return
         if self.is_command_available(command='on',device=device):
             try:
-                self.hub_switch_devices(self.hub_get_device_id(device),"on")
+                self.hub_command_devices(self.hub_get_device_id(device),"on")
                 self.speak_dialog('ok',data={'device': device})
             except:
                 self.speak_dialog('url.error')
@@ -44,7 +44,7 @@ class HubitatIntegration(MycroftSkill):
             return
         if self.is_command_available(command='off',device=device):
             self.speak_dialog('ok', data={'device': device})
-            self.hub_switch_devices(self.hub_get_device_id(device),"off")
+            self.hub_command_devices(self.hub_get_device_id(device),"off")
 
     @intent_file_handler('level.intent')
     def handle_level_intent(self,message):
@@ -55,7 +55,7 @@ class HubitatIntegration(MycroftSkill):
             return
         level = message.data.get('level')
         if self.is_command_available(command='setLevel',device=device):
-            self.hub_switch_devices(self.hub_get_device_id(device),"setLevel",level)
+            self.hub_command_devices(self.hub_get_device_id(device),"setLevel",level)
             self.speak_dialog('ok', data={'device': device})
 
     @intent_file_handler('rescan.intent')
@@ -70,23 +70,6 @@ class HubitatIntegration(MycroftSkill):
                 return True
         self.speak_dialog('command.not.supported',data={'device':device,'command':command})
         return False;
-
-    def get_hub_device_namexxx(self,message):
-        # The utterance may have something different than the real name like "the light" or "lights" rather
-        # than the actual Hubitat name of light.  This finds the actual Hubitat name assuming the utterance
-        # is a superset
-        utt_device = message.data.get('device').replace("the ","")
-        clean_utt_dev = utt_device.replace("the ","")
-        if clean_utt_dev.endswith('s'):
-            clean_utt_dev = clean_utt_dev[:-1]
-        for hubDev in self.devIdDict:
-            self.log.info("Hubitate="+hubDev.casefold()+", utterance="+utt_device)
-            if (utt_device.find(hubDev.casefold()) >= 0):
-                self.log.info("Changed "+utt_device+" to "+hubDev)
-                return hubDev
-        self.log.info("No device found for "+utt_device)
-        self.speak_dialog('device.not.supported',data={'device':utt_device})
-        raise Exception("Unsupported Device")
 
     def get_hub_device_name(self,message):
         # The utterance may have something different than the real name like "the light" or "lights" rather
@@ -126,7 +109,9 @@ class HubitatIntegration(MycroftSkill):
                 self.log.debug("Found device I said: "+hubDev+" ID="+hubId)
                 return hubId
 
-    def hub_switch_devices(self,devid,state,value=None):
+    def hub_command_devices(self,devid,state,value=None):
+        if devid == "testonly":
+            return
         url="http://"+self.address+"/apps/api/34/devices/"+devid+"/"+state
         if(value != None):
             url = url+"/"+value
@@ -134,7 +119,10 @@ class HubitatIntegration(MycroftSkill):
         r=requests.get(url,params=self.accessToken)
         
     def update_devices(self):
-        self.devCommandsDict = {}
+        #Init the device list and command list with tests
+        self.devCommandsDict = {"test on dev":["on"],"test onoff dev":["on","off"],
+                                "test level dev":["on","off","setLevel"]}
+        self.devIdDict = {"test on dev":"testonly","test off dev":"testonly","test level dev":"testonly"}
         self.log.debug(self.accessToken)
         try:
             r=requests.get("http://"+self.address+"/apps/api/34/devices/all",params=self.accessToken)
