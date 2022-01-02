@@ -3,6 +3,8 @@ from fuzzywuzzy import fuzz
 import requests
 import json
 
+__author__="BurnsFisher"
+
 class HubitatIntegration(MycroftSkill):
     def __init__(self):
         MycroftSkill.__init__(self)
@@ -64,6 +66,18 @@ class HubitatIntegration(MycroftSkill):
         self.log.info(str(count))
         self.speak_dialog('rescan',data={'count':count})
 
+    @intent_file_handler('list.devices.intent')
+    def handle_list_devices_intent(self,message):
+        if not self.nameDictPresent:
+            self.update_devices()
+        number=0
+        self.log.info("Enter list handler")
+        for hubDev in self.devIdDict:
+            ident=self.devIdDict[hubDev]
+            if ident != 'testonly':
+                 number=number+1
+                 self.speak_dialog('list.devices',data={'number':str(number),'name':hubDev,
+                                       'id':ident})
     def is_command_available(self,device,command):
         for realDev in self.devCommandsDict:
             if device.find(realDev) >= 0 and command in self.devCommandsDict[realDev]:
@@ -152,9 +166,10 @@ class HubitatIntegration(MycroftSkill):
             self.nameDictPresent=True
         return count
 
-
 def create_skill():
     return HubitatIntegration()
+
+
 
 
 
