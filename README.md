@@ -4,7 +4,7 @@ Hubitat Integration with Mycroft
 ## About
 A skill to teach Mycroft how to send commands to the Hubitat Zigbee/ZWave hub based on spoken 
 commands.  This skill can deal with any Hubitat device that is enabled in the Hubitat "Maker" app
-and which has commands "on", "off" and "setLevel", so essentially any switched outlets, lights,
+and which has commands "on", "off" or "setLevel", so essentially any switched outlets, lights,
 dimmers, and scene activators.
 
 You can also ask it to scan for new devices that Hubitat has made available to it, and you can
