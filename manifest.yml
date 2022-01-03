@@ -8,7 +8,6 @@
 #   # Pip dependencies on PyPI
    python:
      - requests
-     - json
      - fuzzywuzzy
 #
 #   # Install packages with the system package manager
