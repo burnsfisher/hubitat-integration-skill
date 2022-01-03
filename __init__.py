@@ -22,6 +22,7 @@ class HubitatIntegration(MycroftSkill):
         self.accessToken = {'access_token':self.settings.get('access_token')}
         self.address=self.settings.get('local_address')
         self.minFuzz=self.settings.get('minimum_fuzzy_score')
+        self.log.debug("Updated access token={}, fuzzy={}".format(self.accessToken,self.minFuzz))
 
     @intent_file_handler('turn.on.intent')
     def handle_on_intent(self, message):
