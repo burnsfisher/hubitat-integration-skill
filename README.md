@@ -9,6 +9,7 @@ You can also ask it to scan for new devices that Hubitat has made available to i
 
 The device name that you speak to Mycroft is the device label you have specified in Hubitat, but the skill uses "fuzzywuzzy" to allow some leeway in what you say.
 
+There are three settings for this skill (which you set via your Mycroft account).  You *must* specify the access token, which can be found by looking at the Hubitat "Maker" app.  The Hubitat address defaults to hubitat.local, which should work unless you have multiple hubitats on the LAN or for some other reason .local names are not supported.  You can also specify a 'score' between 0 and 100 for comparing the device name you speak to the Hubitat label.  For example, if the label is 'bookcase lights' you can say 'the bookcase lights', 'bookcase light', 'lights on the bookcase', etc.  A score of 65 seems to work well.
 
 ## Examples
 * "Turn on the bookcase lights"
