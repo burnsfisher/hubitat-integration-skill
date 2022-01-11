@@ -23,7 +23,10 @@ class HubitatIntegration(MycroftSkill):
         self.accessToken = {'access_token':self.settings.get('access_token')}
         self.address=self.settings.get('local_address')
         self.minFuzz=self.settings.get('minimum_fuzzy_score')
-        self.log.debug("Updated access token={}, fuzzy={}".format(self.accessToken,self.minFuzz))
+        if(self.address.endswith(".local")):
+            self.address = socket.gethostbyname(self.address)
+
+        self.log.debug("Updated access token={}, fuzzy={}, addr={}".format(self.accessToken,self.minFuzz,self.address))
 
     @intent_file_handler('turn.on.intent')
     def handle_on_intent(self, message):
@@ -79,7 +82,6 @@ class HubitatIntegration(MycroftSkill):
         if not self.nameDictPresent:
             self.update_devices()
         number=0
-        self.log.info("Enter list handler")
         for hubDev in self.devIdDict:
             ident=self.devIdDict[hubDev]
             if ident != 'testonly':
@@ -115,7 +117,7 @@ class HubitatIntegration(MycroftSkill):
         if best_score>self.minFuzz:
             self.log.debug("Changed "+utt_device+" to "+best_name)
             return best_name
-        self.log.info("No device found for "+utt_device)
+        self.log.debug("No device found for "+utt_device)
         self.speak_dialog('device.not.supported',data={'device':utt_device})
         raise Exception("Unsupported Device")
         
@@ -163,7 +165,7 @@ class HubitatIntegration(MycroftSkill):
         try:
             jsonLevel1 = json.loads(r)
         except:
-            self.log.info("Error on json load")
+            self.log.debug("Error on json load")
         count=0
         for device in jsonLevel1:
             # For every device returned, record as a dict the id to use in a URL and the label
@@ -198,10 +200,10 @@ class HubitatIntegration(MycroftSkill):
                 self.speak_dialog('url.backup')
                 self.address = socket.gethostbyname("hubitat.local")
                 url = "http://"+self.address+partURL
-                self.log.info("Fell back to hubitat.local which translated to "+self.address)
+                self.log.debug("Fell back to hubitat.local which translated to "+self.address)
                 r=requests.get(url,params=self.accessToken,timeout=10)
             except:
-                self.log.info("Got an error from requests")
+                self.log.debug("Got an error from requests")
                 self.speak_dialog('url.error')
         return r.text
 
