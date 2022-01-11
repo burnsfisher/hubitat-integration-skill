@@ -2,6 +2,7 @@ from mycroft import MycroftSkill, intent_file_handler
 from fuzzywuzzy import fuzz
 import requests
 import json
+import socket
 
 __author__="BurnsFisher"
 
@@ -60,6 +61,12 @@ class HubitatIntegration(MycroftSkill):
         if self.is_command_available(command='setLevel',device=device):
             self.hub_command_devices(self.hub_get_device_id(device),"setLevel",level)
             self.speak_dialog('ok', data={'device': device})
+
+    @intent_file_handler('attr.intent')
+    def handle_attr_intent(self,message):
+        device = self.get_hub_device_name(message)
+        self.hub_get_attribute(self.hub_get_device_id(device),"temperature")
+
 
     @intent_file_handler('rescan.intent')
     def handle_rescan_intent(self,message):
@@ -127,29 +134,43 @@ class HubitatIntegration(MycroftSkill):
     def hub_command_devices(self,devid,state,value=None):
         if devid == "testonly":
             return
-        url="http://"+self.address+"/apps/api/34/devices/"+devid+"/"+state
+        url="/apps/api/34/devices/"+devid+"/"+state
         if(value != None):
             url = url+"/"+value
         self.log.debug("URL for switching device "+url)
-        r=requests.get(url,params=self.accessToken)
-        
+        r=self.access_hubitat(url)
+    
+    def hub_get_attribute(self,devid,attr):
+        self.log.info("Devid is {}, attr is {}".format(devid,attr))
+        if devid == "testonly":
+            return "ok"
+        url = "/apps/api/34/devices/"+devid+"/poll"
+        retVal = self.access_hubitat(url)
+        jsn = json.loads(retVal)
+        self.log.info(str(type(jsn)))
+        for info in jsn:
+            self.log.info(str(type(info)))
+            if info == "attributes":
+                for a in jsn[info]:
+                    self.log.info("type of a={},a={}".format(type(a),a))
     def update_devices(self):
         #Init the device list and command list with tests
         self.devCommandsDict = {"test on dev":["on"],"test onoff dev":["on","off"],
                                 "test level dev":["on","off","setLevel"]}
         self.devIdDict = {"test on dev":"testonly","test off dev":"testonly","test level dev":"testonly"}
         self.log.debug(self.accessToken)
+        r = self.access_hubitat("/apps/api/34/devices/all")
         try:
-            r=requests.get("http://"+self.address+"/apps/api/34/devices/all",params=self.accessToken)
+            jsonLevel1 = json.loads(r)
         except:
-            self.log.debug("Got an error from requests")
-            self.speak_dialog('url.error')
-
-        jsonLevel1 = json.loads(r.text)
+            self.log.info("Error on json load")
         count=0
         for device in jsonLevel1:
             # For every device returned, record as a dict the id to use in a URL and the label
             # to be spoken
+            #thisId = device.items()['id']
+            #thisLabel = device.items()['label']
+            #self.log.info("Id is "+str(thisId)+"label is "+thisLabel)
             for a,b in device.items():
                 self.log.debug("a is "+str(a)+" b is "+str(b))
                 if a == 'id':
@@ -166,6 +187,24 @@ class HubitatIntegration(MycroftSkill):
             count=count+1
             self.nameDictPresent=True
         return count
+    
+    def access_hubitat(self,partURL):
+        url = "http://"+self.address+partURL
+        try:
+            r=requests.get(url,params=self.accessToken,timeout=5)
+        except:
+            try:
+                #self.address = "hubitat.local"
+                self.speak_dialog('url.backup')
+                self.address = socket.gethostbyname("hubitat.local")
+                url = "http://"+self.address+partURL
+                self.log.info("Fell back to hubitat.local which translated to "+self.address)
+                r=requests.get(url,params=self.accessToken,timeout=10)
+            except:
+                self.log.info("Got an error from requests")
+                self.speak_dialog('url.error')
+        return r.text
+
 
 def create_skill():
     return HubitatIntegration()
