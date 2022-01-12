@@ -7,6 +7,9 @@ import socket
 __author__="BurnsFisher"
 
 class HubitatIntegration(MycroftSkill):
+    #
+    ##############################Setup
+    #
     def __init__(self):
         MycroftSkill.__init__(self)
 
@@ -23,15 +26,31 @@ class HubitatIntegration(MycroftSkill):
         self.accessToken = {'access_token':self.settings.get('access_token')}
         self.address=self.settings.get('local_address')
         self.minFuzz=self.settings.get('minimum_fuzzy_score')
+        a = self.settings.get('attr_name')
+        b = self.settings.get('dev_name')
+        
+        a = a.replace('"','').replace("'","")
+        b = b.replace('"','').replace("'","")
+        self.log.debug("Settings are "+a+" and "+b)
+        attrs = a.rsplit(",")
+        devs = b.rsplit(",")
+        #self.log.info("Changed to "+attrs+" and "+devs)
+        #self.attrDict = attrs+devs
+        self.attrDict = dict(zip(attrs,devs))
+        self.log.debug(self.attrDict)
         if(self.address.endswith(".local")):
             self.address = socket.gethostbyname(self.address)
 
         self.log.debug("Updated access token={}, fuzzy={}, addr={}".format(self.accessToken,self.minFuzz,self.address))
+#
+# Intent handlers
+#
 
     @intent_file_handler('turn.on.intent')
     def handle_on_intent(self, message):
         # This is for utterances like "turn on the xxx"
         try:
+            self.log.debug("In on intent")
             device = self.get_hub_device_name(message)
         except:
             return
@@ -67,9 +86,21 @@ class HubitatIntegration(MycroftSkill):
 
     @intent_file_handler('attr.intent')
     def handle_attr_intent(self,message):
-        device = self.get_hub_device_name(message)
-        self.hub_get_attribute(self.hub_get_device_id(device),"temperature")
-
+        try:
+            attr=self.hub_get_attr_name(message.data.get('attr'))
+        except:
+            return
+        try:
+            device = self.get_hub_device_name(message)
+        except:
+            device = self.get_hub_device_name_from_text(self.attrDict[attr])
+        self.log.debug("Found attribute={},device={}".format(attr,device))
+        val=self.hub_get_attribute(self.hub_get_device_id(device),attr)
+        if val==None:
+            self.speak_dialog('attr.not.supported',data={'device':device,'attr':attr})
+        #self.speak_dialog('attr',data={device:device,attr:"temperature",value:val})
+        else:
+            self.speak_dialog('attr',data={'device':device,'attr':attr,'value':val})
 
     @intent_file_handler('rescan.intent')
     def handle_rescan_intent(self,message):
@@ -88,53 +119,98 @@ class HubitatIntegration(MycroftSkill):
                  number=number+1
                  self.speak_dialog('list.devices',data={'number':str(number),'name':hubDev,
                                        'id':ident})
+                 
+    #
+    # Routines used by intent handlers
+    #
     def is_command_available(self,device,command):
+        
+        # Complain if the specified device is not one in the Hubitat maker app.
+
         for realDev in self.devCommandsDict:
             if device.find(realDev) >= 0 and command in self.devCommandsDict[realDev]:
                 return True
         self.speak_dialog('command.not.supported',data={'device':device,'command':command})
         return False;
-
+        
     def get_hub_device_name(self,message):
+        
         # The utterance may have something different than the real name like "the light" or "lights" rather
-        # than the actual Hubitat name of light.  This finds the actual Hubitat name assuming the utterance
-        # is a superset
+        # than the actual Hubitat name of light.  This finds the actual Hubitat name using 'fuzzy-wuzzy' and
+        # the match score specified as a setting by the user
+        self.log.debug("In get_h_d_n with device=")
+        utt_device = message.data.get('device')
+        self.log.debug(utt_device)
+        if utt_device == None:
+            raise NameError('NoDevice')
+        a = self.get_hub_device_name_from_text(utt_device)
+        self.log.debug("Device is "+str(a))
+        return a
+    
+    def get_hub_device_name_from_text(self,text):
         if not self.nameDictPresent:
             self.update_devices()
-        utt_device = message.data.get('device')
         best_name = None
         best_score=self.minFuzz
-        self.log.debug("minFuzz is "+str(self.minFuzz))
         for hubDev in self.devIdDict:
             score = fuzz.token_sort_ratio(
                 hubDev,
-                utt_device)
-            self.log.debug("Hubitate="+hubDev+", utterance="+utt_device+" score="+str(score))
+                text)
+            #self.log.info("Hubitate="+hubDev+", utterance="+text+" score="+str(score))
             if score > best_score:
                 best_score = score
                 best_name = hubDev
         self.log.debug("Best score is "+str(best_score))
         if best_score>self.minFuzz:
-            self.log.debug("Changed "+utt_device+" to "+best_name)
+            self.log.debug("Changed "+text+" to "+best_name)
             return best_name
-        self.log.debug("No device found for "+utt_device)
-        self.speak_dialog('device.not.supported',data={'device':utt_device})
+        self.log.debug("No device found for "+text)
+        self.speak_dialog('device.not.supported',data={'device':text})
         raise Exception("Unsupported Device")
         
 
     def hub_get_device_id(self,device):
-        #devIds is a dict with the device name and device is the device name spoken for the intent
+
+        #devIds is a dict with the device name from hubitat as the key, and the ID number as the value.
         #This returns the ID number to send to hubitat
-        #self.get_hub_device_name(device)
         
         for hubDev in self.devIdDict:
+            self.log.debug("hubDev:"+hubDev+" device="+device)
             if device.find(hubDev) >= 0:
                 hubId=self.devIdDict[hubDev]
                 self.log.debug("Found device I said: "+hubDev+" ID="+hubId)
                 return hubId
+            
+    def hub_get_attr_name(self,name):
+        best_name = None
+        best_score=self.minFuzz
+        self.log.debug(self.attrDict)
+        for attr in self.attrDict:
+            self.log.debug("attr is {}".format(attr))
+            score = fuzz.token_sort_ratio(
+                attr,
+                name)
+            #self.log.info("Hubitate="+hubDev+", utterance="+text+" score="+str(score))
+            if score > best_score:
+                best_score = score
+                best_name = attr
+        self.log.debug("Best score is "+str(best_score))
+        if best_score>self.minFuzz:
+            self.log.debug("Changed "+attr+" to "+best_name)
+            return best_name
+        self.log.debug("No device found for "+name)
+        self.speak_dialog('attr.not.supported',data={'device':'any device in settings','attr':name})
+        raise Exception("Unsupported Attribute")
+
+        return name
 
     def hub_command_devices(self,devid,state,value=None):
+        
+        # Build a URL to send the requested command to the Hubitat and
+        # send it via "access_hubitat"
+        
         if devid == "testonly":
+            #This is used for regression tests only
             return
         url="/apps/api/34/devices/"+devid+"/"+state
         if(value != None):
@@ -143,18 +219,22 @@ class HubitatIntegration(MycroftSkill):
         r=self.access_hubitat(url)
     
     def hub_get_attribute(self,devid,attr):
-        self.log.info("Devid is {}, attr is {}".format(devid,attr))
+        self.log.debug("Looking for attr {}".format(attr))
         if devid == "testonly":
             return "ok"
         url = "/apps/api/34/devices/"+devid+"/poll"
         retVal = self.access_hubitat(url)
         jsn = json.loads(retVal)
-        self.log.info(str(type(jsn)))
+        self.log.debug("Json.loads type is "+str(type(jsn)))
         for info in jsn:
-            self.log.info(str(type(info)))
+            self.log.debug("For info type: "+str(type(info)))
             if info == "attributes":
                 for a in jsn[info]:
-                    self.log.info("type of a={},a={}".format(type(a),a))
+                    #self.log.info("type of a={},a={}".format(type(a),a))
+                    if a['name'] == attr:
+                        self.log.debug(a['currentValue'])
+                        return a['currentValue']
+        return None
     def update_devices(self):
         #Init the device list and command list with tests
         self.devCommandsDict = {"test on dev":["on"],"test onoff dev":["on","off"],

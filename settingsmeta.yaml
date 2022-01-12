@@ -15,5 +15,14 @@ skillMetadata:
           value: ""
         - name: minimum_fuzzy_score
           type: number
-          label: 0 to 100.  Smaller value makes device name less fussy
-          value: 50
+          label: Device name match score 0-100.
+          value: 65
+        - name: attr_name
+          type: text
+          label: attr1
+          value: "temperaturesetPoint"
+        - name: dev_name      
+          type: text
+          label: dev1     
+          value: "thermometer thermometer"
+
