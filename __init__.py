@@ -40,8 +40,9 @@ class HubitatIntegration(MycroftSkill):
         self.log.debug(self.attrDict)
         if(self.address.endswith(".local")):
             self.address = socket.gethostbyname(self.address)
-
-        self.log.debug("Updated access token={}, fuzzy={}, addr={}".format(self.accessToken,self.minFuzz,self.address))
+        self.attrDict["testattr"] = "testAttrDev"
+        self.log.info("Updated access token={}, fuzzy={}, addr={}, attr dictionary={}".format(
+            self.accessToken,self.minFuzz,self.address,self.attrDict))
 #
 # Intent handlers
 #
@@ -115,7 +116,7 @@ class HubitatIntegration(MycroftSkill):
         number=0
         for hubDev in self.devIdDict:
             ident=self.devIdDict[hubDev]
-            if ident != 'testonly':
+            if ident[0:6] != '**test':
                  number=number+1
                  self.speak_dialog('list.devices',data={'number':str(number),'name':hubDev,
                                        'id':ident})
@@ -209,7 +210,7 @@ class HubitatIntegration(MycroftSkill):
         # Build a URL to send the requested command to the Hubitat and
         # send it via "access_hubitat"
         
-        if devid == "testonly":
+        if devid[0:6] == "**test":
             #This is used for regression tests only
             return
         url="/apps/api/34/devices/"+devid+"/"+state
@@ -220,26 +221,27 @@ class HubitatIntegration(MycroftSkill):
     
     def hub_get_attribute(self,devid,attr):
         self.log.debug("Looking for attr {}".format(attr))
-        if devid == "testonly":
-            return "ok"
         url = "/apps/api/34/devices/"+devid+"/poll"
         retVal = self.access_hubitat(url)
-        jsn = json.loads(retVal)
-        self.log.debug("Json.loads type is "+str(type(jsn)))
+        if devid == "**testAttr":
+            tempList=[{'name':"testattr","currentValue":99}]
+            jsn = {"attributes":tempList}
+            x = jsn["attributes"]            
+        else:
+            jsn = json.loads(retVal)
         for info in jsn:
-            self.log.debug("For info type: "+str(type(info)))
             if info == "attributes":
                 for a in jsn[info]:
-                    #self.log.info("type of a={},a={}".format(type(a),a))
                     if a['name'] == attr:
                         self.log.debug(a['currentValue'])
                         return a['currentValue']
         return None
     def update_devices(self):
         #Init the device list and command list with tests
-        self.devCommandsDict = {"test on dev":["on"],"test onoff dev":["on","off"],
-                                "test level dev":["on","off","setLevel"]}
-        self.devIdDict = {"test on dev":"testonly","test off dev":"testonly","test level dev":"testonly"}
+        self.devCommandsDict = {"testOnDev":["on"],"testOnOffDev":["on","off"],
+                                "testLevelDev":["on","off","setLevel"]}
+        self.devIdDict = {"testOnDev":"**testOnOff","testOnOffDev":"**testOnOff","testLevelDev":"**testLevel",
+                          "testAttrDev":"**testAttr"}
         self.log.debug(self.accessToken)
         r = self.access_hubitat("/apps/api/34/devices/all")
         try:
