@@ -1,0 +1,4 @@
+I don't know the attribute {attr}
+There is no attribute {attr} in {device}
+{attr} is not known or supported in {device}
+

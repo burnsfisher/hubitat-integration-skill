@@ -1,0 +1,11 @@
+get {attr} from  {device}
+get {attr} in {device}
+show {attr} in {device}
+tell me {attr} in {device}
+tell me {attr} of {device}
+tell me the inside {attr}
+tell me the room {attr}
+show the inside {attr}
+what is the inside {attr}
+what is the room {attr}
+what does {device} say {attr} is
