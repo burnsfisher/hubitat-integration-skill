@@ -1,4 +1,3 @@
-Turn off {device}
-switch off {device}
+(Turn|Switch) off  {device} (do {how}|)
 Power down the {device}
 Kill the {device}

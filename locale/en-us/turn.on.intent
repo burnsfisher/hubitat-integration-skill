@@ -1,7 +1,5 @@
-Turn on {device}
-switch on {device}
+(Turn|Switch|Power) on {device} (do {how}|)
 Power up the {device}
 Fire up the {device}
-Power on {device}
-Set scene {device}
-set {device} mode
+Set scene {device} (do {how} |)
+set {device} mode (do {how} |)

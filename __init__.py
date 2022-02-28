@@ -82,6 +82,7 @@ class HubitatIntegration(MycroftSkill):
         try:
             self.log.debug("In on/off intent with command "+cmd)
             device = self.get_hub_device_name(message)
+            silence = message.data.get('how')
         except:
             # get_hub_device_name speaks the error dialog
             return
@@ -89,7 +90,8 @@ class HubitatIntegration(MycroftSkill):
         if self.is_command_available(command=cmd,device=device):
             try:
                 self.hub_command_devices(self.hub_get_device_id(device),cmd)
-                self.speak_dialog('ok',data={'device': device})
+                if(silence is None):
+                    self.speak_dialog('ok',data={'device': device})
             except:
                 #If command devices throws an error, probably a bad URL
                 self.speak_dialog('url.error')
