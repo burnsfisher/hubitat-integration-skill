@@ -341,7 +341,7 @@ class LCSHubitatIntegration(MycroftSkill):
             self.dev_id_dict[this_label] = this_id
             self.log.debug(self.dev_commands_dict[this_label])
             count = count + 1
-            self.name_dict_present = True
+        self.name_dict_present = True
         return count
 
     def access_hubitat(self, part_url):
