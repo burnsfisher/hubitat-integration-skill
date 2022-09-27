@@ -1,4 +1,5 @@
 __pycache__/
 *.qmlc
 settings.json
-
+.idea
+/.idea/
