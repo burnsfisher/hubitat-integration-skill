@@ -35,8 +35,7 @@ class LCSHubitatIntegration(MycroftSkill):
         self.access_token = {'access_token': self.settings.get('access_token')}
         self.address = self.settings.get('local_address')
         self.min_fuzz = self.settings.get('minimum_fuzzy_score')
-        self.maker_api_app_id = self.settings.get('hubitat_maker_api_app_id')
-        self.maker_api_app_id = str(self.maker_api_app_id)
+        self.maker_api_app_id = str(self.settings.get('hubitat_maker_api_app_id'))
         # The attributes are a special case.  I want to end up with a dict indexed by attribute
         # name with the contents being the default device.  But I did not want the user to have
         # to specify this in Python syntax.  So I just have the user give CSVs, possibly in quotes,
