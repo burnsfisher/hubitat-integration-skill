@@ -68,8 +68,9 @@ class LCSHubitatIntegration(MycroftSkill):
                 self.log.info("Invalid Hostname or IP Address: addr={}".format(self.address))
                 return
 
-            self.log.debug("Updated settings: access token={}, fuzzy={}, addr={}, attr dictionary={}".format(
-                self.access_token, self.min_fuzz, self.address, self.maker_api_app_id, self.attr_dict))
+            self.log.debug(
+                f"Updated settings: access token={self.access_token}, fuzzy={self.min_fuzz}, addr={self.address}, "
+                f"makerApiId={self.maker_api_app_id}, attr dictionary={self.attr_dict}")
             self.configured = True
 
     def not_configured(self):
