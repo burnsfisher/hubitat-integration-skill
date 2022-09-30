@@ -105,25 +105,13 @@ class LCSHubitatIntegration(MycroftSkill):
                 return
 
             level = message.data.get('level')
-            if self.is_command_available(command='setLevel', device=device):
+            if level in self.hub_get_attribute("supportedThermostatModes"):
+                if self.is_command_available(command='setThermostatMode', device=device):
+                    self.hub_command_devices(self.hub_get_device_id(device), "setThermostatMode", level)
+                else:
+                    self.not_configured()
+            elif self.is_command_available(command='setLevel', device=device):
                 self.hub_command_devices(self.hub_get_device_id(device), "setLevel", level)
-                self.speak_dialog('ok', data={'device': device})
-        else:
-            self.not_configured()
-
-    @intent_file_handler('thermostat.mode.intent')
-    def handle_thermost_mode_intent(self, message):
-        if self.configured:
-            # For utterances like "set the xxx to yyy%"
-            try:
-                device = self.get_hub_device_name(message)
-            except:
-                # g_h_d_n speaks a dialog before throwing anerror
-                return
-
-            level = message.data.get('thermostatmode')
-            if self.is_command_available(command='setThermostatMode', device=device):
-                self.hub_command_devices(self.hub_get_device_id(device), "setThermostatMode", level)
                 self.speak_dialog('ok', data={'device': device})
         else:
             self.not_configured()
