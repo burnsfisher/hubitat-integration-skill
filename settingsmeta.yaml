@@ -12,7 +12,7 @@ skillMetadata:
         - name: access_token
           type: text
           label: Token from maker app
-          value: "abcd"
+          value: ""
         - name: hubitat_maker_api_app_id
           type: number
           label: Hubitat MakerAPI AppId
