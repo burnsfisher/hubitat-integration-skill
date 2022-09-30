@@ -282,7 +282,7 @@ class LCSHubitatIntegration(MycroftSkill):
         self.access_hubitat(url)
 
     def hub_get_attribute(self, dev_id, attr):
-        self.log.debug("Looking for attr {}".format(ret_attr))
+        self.log.debug("Looking for attr {}".format(attr))
         # The json string from Hubitat turns into a dict.  The key attributes
         # has a value of a list.  The list is a list of dicts with the attribute
         # name, value, and other things that we don't care about.  So here when
