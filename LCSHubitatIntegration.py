@@ -296,13 +296,14 @@ class LCSHubitatIntegration(MycroftSkill):
             url = "/apps/api/" + self.maker_api_app_id + "/devices/" + dev_id
             retVal = self.access_hubitat(url)
             jsn = json.loads(retVal)
-
+            self.log.debug(jsn)
         # Now we have a nested set of dicts and lists as described above, either a simple
         # one for test or the real (and more complex) one for a real Hubitat
 
         for info in jsn:
             if info == "attributes":
                 for ret_attr in jsn[info]:
+                    self.log.debug(ret_attr)
                     if ret_attr['name'] == attr:
                         self.log.debug(ret_attr['currentValue'])
                         return ret_attr['currentValue']
