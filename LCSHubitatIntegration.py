@@ -105,7 +105,7 @@ class LCSHubitatIntegration(MycroftSkill):
                 return
 
             level = message.data.get('level')
-            if level in self.hub_get_attribute("supportedThermostatModes"):
+            if level in self.hub_get_attribute(self.hub_get_device_id(device), "supportedThermostatModes"):
                 if self.is_command_available(command='setThermostatMode', device=device):
                     self.hub_command_devices(self.hub_get_device_id(device), "setThermostatMode", level)
                 else:
