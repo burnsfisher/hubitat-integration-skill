@@ -13,6 +13,10 @@ skillMetadata:
           type: text
           label: Token from maker app
           value: ""
+        - name: hubitat_maker_api_app_id
+          type: number
+          label: Hubitat MakerAPI AppId
+          value: 758
         - name: minimum_fuzzy_score
           type: number
           label: Device name match score 0-100.
