@@ -282,7 +282,7 @@ class LCSHubitatIntegration(MycroftSkill):
         self.access_hubitat(url)
 
     def hub_get_attribute(self, dev_id, attr):
-        self.log.debug("Looking for attr {}".format(attr))
+        self.log.debug("Looking for attr {}".format(ret_attr))
         # The json string from Hubitat turns into a dict.  The key attributes
         # has a value of a list.  The list is a list of dicts with the attribute
         # name, value, and other things that we don't care about.  So here when
@@ -293,7 +293,7 @@ class LCSHubitatIntegration(MycroftSkill):
             x = jsn["attributes"]
         else:
             # Here we get the real json string from hubitat
-            url = "/apps/api/" + self.maker_api_app_id + "/devices/" + dev_id + "/poll"
+            url = "/apps/api/" + self.maker_api_app_id + "/devices/" + dev_id
             retVal = self.access_hubitat(url)
             jsn = json.loads(retVal)
 
@@ -302,10 +302,10 @@ class LCSHubitatIntegration(MycroftSkill):
 
         for info in jsn:
             if info == "attributes":
-                for attr in jsn[info]:
-                    if attr['name'] == attr:
-                        self.log.debug(attr['currentValue'])
-                        return attr['currentValue']
+                for ret_attr in jsn[info]:
+                    if ret_attr['name'] == attr:
+                        self.log.debug(ret_attr['currentValue'])
+                        return ret_attr['currentValue']
         return None
     
     def update_devices(self):
