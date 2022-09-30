@@ -1,4 +1,3 @@
-set {device} to {level}
 set {device} to {level} percent
 raise {device} to {level} percent
 lower {device} to {level} percent
