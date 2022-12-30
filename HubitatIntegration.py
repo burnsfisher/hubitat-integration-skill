@@ -7,7 +7,7 @@ import socket
 __author__ = "burnsfisher,GonzRon"
 
 
-class LCSHubitatIntegration(MycroftSkill):
+class HubitatIntegration(MycroftSkill):
     def __init__(self):
         super().__init__()
         self.configured = False

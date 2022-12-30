@@ -1,5 +1,5 @@
-from .LCSHubitatIntegration import LCSHubitatIntegration
+from .HubitatIntegration import HubitatIntegration
 
 
 def create_skill():
-    return LCSHubitatIntegration()
+    return HubitatIntegration()
