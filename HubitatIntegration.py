@@ -326,6 +326,7 @@ class HubitatIntegration(MycroftSkill):
         # Now get the actual devices from Hubitat and parse out the devices and their IDs and valid
         # commands
         request = self.access_hubitat("/apps/api/" + self.maker_api_app_id + "/devices/all")
+
         if request.find('AppException') != -1 or request.find('invalid_token') != -1:
             self.speak_dialog('url.error')
             self.log.debug("Bad returns from get all devices")
