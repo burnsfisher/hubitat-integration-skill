@@ -26,6 +26,55 @@ This skill can read attributes as well, but you must specify both the name of th
 Burns Fisher (@burnsfisher)
 LC Style (@GonzRon)
 
+## Installation Instructions (Work in progress)
+I have successfully made this work on both Picroft and on Mycroft MkII hardware with Neon software
+
+Here is the process for installing on Neon.  I assume you have a MkII hardware with a Neon flash drive.  If you have version 23.3.15, then say
+"Hey Neon is there an update available".  There will be, and you should install it.
+
+Next ssh to the MkII (if you have not done it before, ssh neon@neon.local, password neon.  You must change it and re-ssh)
+
+Issue the following commands:
+
+pip uninstall neon_homeassistant_skill
+osm install https://github.com/burnsfisher/hubitat-integration-skill.git
+cd ~/.config/neon/skills.hubitat-integration-skill.burnsfisher
+
+
+Now use nano or whatever editor you want to edit settings.json.  It should initially
+have only one line surrounded by braces.  Add extra lines so it looks like this:
+
+{
+    "__mycroft_skill_firstrun": false,
+    "access_token": "xxxxxxxx",
+    "local_address": "xxxxxxx",
+    "minimum_fuzzy_score": 62,
+    "hubitat_maker_api_app_id": xxx,
+    "attr_name": "'temperature','heatingSetpoint','level'",
+    "dev_name": "'thermostat','thermostat','overhead lights'"
+}
+
+You will need to get the access_token and the hubitat maker app ID from hubitat itself.  The access token is
+a long series of numbers and letters, while the app id should be an integer.  The local address needs to be
+a dotted quad (e.g. 192.168.1.2) which you can find from your wifi hub.  Hubitat.local will not work for some
+reason.  You must be VERY careful to get settings.json to work correctly.  If the hubitat skill does not work
+look back at this file.  If your hubitat lines have been deleted, there was a syntax error.  (what for closing 
+braces, parens, and be sure to add a comma after all but the last text line)
+
+Enter
+cd ~/.config/neon and similar to the above editing, you must edit neon.yaml to add
+
+  - neon-homeassistant-skill
+  
+to the end of the blacklisted skills.  This will ensure that home assistant will not be installed again (HA has
+conflicting commands with hubitat).
+
+
+Now restart your MkII using the command
+
+sudo reboot now
+
+(Do not just power cycle it).
 ## Category
 **IoT**
 

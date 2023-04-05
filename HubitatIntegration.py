@@ -42,6 +42,7 @@ class HubitatIntegration(MycroftSkill):
         # and the convert them to lists and then to a dict.
         attr_name = self.settings.get('attr_name')
         dev_name = self.settings.get('dev_name')
+        self.log.debug(f"Address={self.address},token={self.access_token},app id={self.maker_api_app_id}")
 
         if None not in [self.access_token, self.address, self.min_fuzz, self.maker_api_app_id, attr_name, dev_name]:
             # Remove quotes
