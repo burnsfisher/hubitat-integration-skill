@@ -30,15 +30,15 @@ LC Style (@GonzRon)
 I have successfully made this work on both Picroft and on Mycroft MkII hardware with Neon software
 
 Here is the process for installing on Neon.  I assume you have a MkII hardware with a Neon flash drive.  If you have version 23.3.15, then say
-"Hey Neon is there an update available".  There will be, and you should install it.
+"Hey Neon is there an update available".  There will be, and you should install it.  If you have 23.4.5 or later, there may not be a new version.
 
 Next ssh to the MkII (if you have not done it before, ssh neon@neon.local, password neon.  You must change it and re-ssh)
 
-Issue the following commands:
+Issue the following commands (answer y to uninstall, answer 1 [it says unknown--don't worry] and then y to osm install):
 
 pip uninstall neon_homeassistant_skill
 osm install https://github.com/burnsfisher/hubitat-integration-skill.git
-cd ~/.config/neon/skills.hubitat-integration-skill.burnsfisher
+cd ~/.config/neon/skills/hubitat-integration-skill.burnsfisher
 
 
 Now use nano or whatever editor you want to edit settings.json.  It should initially
@@ -58,8 +58,9 @@ You will need to get the access_token and the hubitat maker app ID from hubitat 
 a long series of numbers and letters, while the app id should be an integer.  The local address needs to be
 a dotted quad (e.g. 192.168.1.2) which you can find from your wifi hub.  Hubitat.local will not work for some
 reason.  You must be VERY careful to get settings.json to work correctly.  If the hubitat skill does not work
-look back at this file.  If your hubitat lines have been deleted, there was a syntax error.  (what for closing 
-braces, parens, and be sure to add a comma after all but the last text line)
+look back at this file.  If your hubitat lines have been deleted, there was a syntax error.  (Check for closing 
+braces, parens, and be sure to add a comma after all but the last text line).  I've also found bizzare things that
+go wrong...maybe and extra end-line character, maybe an extra space?  Reported to the Neon/OVOS guys.  
 
 Enter
 cd ~/.config/neon and similar to the above editing, you must edit neon.yaml to add
