@@ -43,6 +43,7 @@ cd ~/.config/neon/skills/hubitat-integration-skill.burnsfisher
 
 Now use nano or whatever editor you want to edit settings.json.  It should initially
 have only one line surrounded by braces.  Add extra lines so it looks like this:
+```
 
 {
     "__mycroft_skill_firstrun": false,
@@ -53,6 +54,8 @@ have only one line surrounded by braces.  Add extra lines so it looks like this:
     "attr_name": "'temperature','heatingSetpoint','level'",
     "dev_name": "'thermostat','thermostat','overhead lights'"
 }
+
+```
 
 You will need to get the access_token and the hubitat maker app ID from hubitat itself.  The access token is
 a long series of numbers and letters, while the app id should be an integer.  The local address needs to be
