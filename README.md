@@ -36,10 +36,11 @@ Next ssh to the MkII (if you have not done it before, ssh neon@neon.local, passw
 
 Issue the following commands (answer y to uninstall, answer 1 [it says unknown--don't worry] and then y to osm install):
 
+```
 pip uninstall neon_homeassistant_skill
 osm install https://github.com/burnsfisher/hubitat-integration-skill.git
 cd ~/.config/neon/skills/hubitat-integration-skill.burnsfisher
-
+```
 
 Now use nano or whatever editor you want to edit settings.json.  It should initially
 have only one line surrounded by braces.  Add extra lines so it looks like this:
