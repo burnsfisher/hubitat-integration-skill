@@ -1,0 +1,8 @@
+{
+    "incompatible_skills": [
+        "skill-homeassistant.mycroftai",
+	"skill-homeassistant.mikejgray",
+	"neon-homeassistant-skill.mikejgray"
+    ]
+}
+
