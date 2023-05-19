@@ -206,7 +206,7 @@ class HubitatIntegration(MycroftSkill):
         utt_device = message.data.get('device')
         self.log.debug(utt_device)
         if utt_device is None:
-            raise NameError('NoDevice')
+            self.log.error('No Device passed in utterance!')
         device_name = self.get_hub_device_name_from_text(utt_device)
         self.log.debug("Device is " + str(device_name))
         return device_name
@@ -238,7 +238,7 @@ class HubitatIntegration(MycroftSkill):
         # Nothing had a high enough score.  Speak and throw.
         self.log.debug("No device found for " + text)
         self.speak_dialog('device.not.supported', data={'device': text})
-        raise Exception("Unsupported Device")
+        self.log.error("Unsupported Device")
 
     def hub_get_device_id(self, device):
         # devIds is a dict with the device name from hubitat as the key, and the ID number as the value.
@@ -272,7 +272,7 @@ class HubitatIntegration(MycroftSkill):
         else:
             self.log.debug("No device found for " + name)
             self.speak_dialog('attr.not.supported', data={'device': 'any device in settings', 'attr': name})
-            raise Exception("Unsupported Attribute")
+            self.log.error(f"Unsupported Attribute for {name}")
 
     def hub_command_devices(self, dev_id, state, value=None):
         # Build a URL to send the requested command to the Hubitat and
