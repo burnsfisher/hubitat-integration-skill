@@ -309,9 +309,9 @@ class HubitatIntegration(MycroftSkill):
             if info == "attributes":
                 for ret_attr in jsn[info]:
                     if ret_attr['name'] == attr:
-                        self.log.debug("Found Attribute Match: " + str(ret_attr['currentValue']))
-                        return ret_attr['currentValue']
-        return None
+                        self.log.debug("Found Attribute Match: " + str(ret_attr.get('currentValue')))
+                        return ret_attr.get('currentValue')
+        return ""
     
     def update_devices(self):
         json_data = None
