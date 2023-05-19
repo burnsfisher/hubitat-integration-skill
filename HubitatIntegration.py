@@ -102,11 +102,11 @@ class HubitatIntegration(MycroftSkill):
             try:
                 device = self.get_hub_device_name(message)
             except:
-                # g_h_d_n speaks a dialog before throwing anerror
+                # g_h_d_n speaks a dialog before throwing an error
                 return
 
             level = message.data.get('level')
-            supported_modes = [s.strip() for s in self.hub_get_attribute(self.hub_get_device_id(device), "supportedThermostatModes").strip('[]').split(',')]
+            supported_modes = [s.strip() for s in self.hub_get_attribute(self.hub_get_device_id(device), "supportedThermostatModes").strip('[]').split(',') if isinstance(s, str)]
             self.log.debug("Set Level Supported Modes: " + str(supported_modes))
             self.log.debug("Level is: " + str(level))
 
