@@ -1,8 +1,8 @@
 {
     "incompatible_skills": [
         "skill-homeassistant.mycroftai",
-	"skill-homeassistant.mikejgray",
-	"neon-homeassistant-skill.mikejgray"
+        "skill-homeassistant.mikejgray",
+        "neon-homeassistant-skill.mikejgray",
+        "neon_homeassistant_skill.mikejgray"
     ]
 }
-
