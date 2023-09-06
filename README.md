@@ -78,11 +78,13 @@ Enter
 cd ~/.config/neon and similar to the above editing, you must edit neon.yaml to add
 
   - neon-homeassistant-skill
+  - neon_homeassistant_skill.mikejgray
   
 to the end of the "blacklisted_skills".  This will ensure that home assistant will not be installed again (HA has
 conflicting commands with hubitat).  You also need to add to "default_skills:" the line "git+https://github.com/burnsfisher/hubitat-integration-skill" (do not
 use the quotes).  This file initially has quite a few lines, so I recommend making a copy.  If you mess up something, it will often be deleted so you will want
-to have the original to try again.
+to have the original to try again.  I just want to emphasize that there is nothing WRONG with this homeassistant skill that Mike wrote...it just uses some of the
+same phrases that Hubitat does (e.g. "turn on xxx")
 
 
 Now restart the Neon software using
