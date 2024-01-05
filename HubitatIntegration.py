@@ -11,14 +11,14 @@ class HubitatIntegration(MycroftSkill):
     def __init__(self):
         super().__init__()
         self.configured = False
-        self.dev_commands_dict = None
+        self.dev_commands_dict = {}
         self.address = None
         self.attr_dict = None
         self.min_fuzz = None
         self.access_token = None
         self.settings_change_callback = None
         self.name_dict_present = None
-        self.dev_id_dict = None
+        self.dev_id_dict = {}
         self.maker_api_app_id = None
 
     def initialize(self):
@@ -193,8 +193,10 @@ class HubitatIntegration(MycroftSkill):
 
     def is_command_available(self, device, command):
         # Complain if the specified attribute is not one in the Hubitat maker app.
-        for real_dev in self.dev_commands_dict:
-            if device.find(real_dev) >= 0 and command in self.dev_commands_dict[real_dev]:
+        if not self.dev_commands_dict:
+            self.update_devices()
+        for real_dev, commands in self.dev_commands_dict.items():
+            if device.find(real_dev) >= 0 and command in commands:
                 return True
         self.speak_dialog('command.not.supported', data={'device': device, 'command': command})
         return False
@@ -243,12 +245,11 @@ class HubitatIntegration(MycroftSkill):
     def hub_get_device_id(self, device):
         # devIds is a dict with the device name from hubitat as the key, and the ID number as the value.
         # This returns the ID number to send to hubitat
-        for hub_dev in self.dev_id_dict:
+        for hub_dev, hub_id in self.dev_id_dict.items():
             # self.log.debug("hubDev:"+hubDev+" device="+device)
             if device.find(hub_dev) >= 0:
-                hubId = self.dev_id_dict[hub_dev]
-                self.log.debug("Found device I said: " + hub_dev + " ID=" + hubId)
-                return hubId
+                self.log.debug("Found device I said: " + hub_dev + " ID=" + hub_id)
+                return hub_id
 
     def hub_get_attr_name(self, name):
         # This is why we need a list of possible attributes.  Otherwise we could not do a fuzzy search.
@@ -328,7 +329,7 @@ class HubitatIntegration(MycroftSkill):
         # commands
         request = self.access_hubitat("/apps/api/" + self.maker_api_app_id + "/devices/all")
 
-        if request.find('AppException') != -1 or request.find('invalid_token') != -1:
+        if not request or request.find('AppException') != -1 or request.find('invalid_token') != -1:
             self.speak_dialog('url.error')
             self.log.debug("Bad returns from get all devices")
             return 0
@@ -379,5 +380,5 @@ class HubitatIntegration(MycroftSkill):
             except:
                 self.log.debug("Got an error from requests")
                 self.speak_dialog('url.error')
-        return request.text
+        return request.text if request else ""
 
